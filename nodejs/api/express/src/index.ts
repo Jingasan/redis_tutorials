@@ -76,7 +76,7 @@ app.get("/keys", async (req: Request, res: Response) => {
   });
 });
 
-// 全keyの取得
+// 指定したkeyの値の取得
 app.get("/redis/:key", async (req: Request, res: Response) => {
   // Redisクライアントの作成
   if (dbHost === undefined || dbPort === undefined) {
