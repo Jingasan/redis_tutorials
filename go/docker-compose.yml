@@ -1,0 +1,57 @@
+version: "3.9"
+services:
+  # Redisコンテナの設定
+  redis:
+    container_name: redis-container
+    image: test-redis-server:7.0.8
+    build:
+      context: ./redis
+      dockerfile: Dockerfile
+      # プロキシ環境下の場合
+      args:
+        - HTTP_PROXY=$HTTP_PROXY
+        - http_proxy=$http_proxy
+        - HTTPS_PROXY=$HTTPS_PROXY
+        - https_proxy=$https_proxy
+    platform: linux/amd64
+    ports:
+      - "$REDIS_CONTAINER_PORT:$REDIS_CONTAINER_PORT"
+    volumes:
+      - "./redis/data:/data"
+      - "./redis/redis.conf:/etc/redis.conf"
+    tty: true
+    networks:
+      backend:
+        ipv4_address: $REDIS_CONTAINER_IPV4 # コンテナのIPアドレス
+  # Go + Ginコンテナの設定
+  api:
+    container_name: api-container
+    image: test-gin-server:1.0.0
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+      args:
+        - HTTP_PROXY=$HTTP_PROXY
+        - http_proxy=$http_proxy
+        - HTTPS_PROXY=$HTTPS_PROXY
+        - https_proxy=$https_proxy
+    ports:
+      - "3000:3000"
+    working_dir: /gin
+    command: ./main
+    depends_on:
+      - db # MySQLコンテナが起動した後に起動
+    env_file:
+      - .env
+    tty: true
+    networks:
+      backend:
+        ipv4_address: $API_CONTAINER_IPV4 # コンテナのIPアドレス
+# ネットワーク設定
+networks:
+  backend:
+    driver: bridge
+    name: app_network
+    ipam:
+      config:
+        - subnet: $SUBNET
