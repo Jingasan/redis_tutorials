@@ -23,7 +23,7 @@ app.post("/key-value/:key", async (req: Request, res: Response) => {
       return res.status(400).json("Bad Request");
     }
     // key-valueの追加
-    await redisClient.set(key, body.value);
+    await redisClient.set(key, JSON.stringify(body.value));
     // レスポンス
     return res.status(200).json("OK");
   } catch (err) {
@@ -38,10 +38,12 @@ app.get("/key-value/:key", async (req: Request, res: Response) => {
     // 指定したkeyの値の取得
     const key = req.params.key;
     const value = await redisClient.get(key);
-    // レスポンス
-    let json: any = {};
-    json[key] = value;
-    return res.status(200).json(json);
+    if (value != null) {
+      let json: any = {};
+      json[key] = JSON.parse(value);
+      // レスポンス
+      return res.status(200).json(json);
+    }
   } catch (err) {
     // レスポンス
     return res.status(500).json(err);
