@@ -39,9 +39,9 @@ app.get("/key-value/:key", async (req: Request, res: Response) => {
     const key = req.params.key;
     const value = await redisClient.get(key);
     if (value != null) {
+      // レスポンス
       let json: any = {};
       json[key] = JSON.parse(value);
-      // レスポンス
       return res.status(200).json(json);
     }
   } catch (err) {
@@ -55,7 +55,7 @@ app.delete("/key-value/:key", async (req: Request, res: Response) => {
   try {
     // 指定したkeyの削除
     const key = req.params.key;
-    const value = await redisClient.del(key);
+    await redisClient.del(key);
     // レスポンス
     return res.status(200).json("OK");
   } catch (err) {
@@ -64,17 +64,36 @@ app.delete("/key-value/:key", async (req: Request, res: Response) => {
   }
 });
 
-// key-valueの一括追加
-app.post("/key-value", async (req: Request, res: Response) => {
+// Pipelineによるkey-valueの一括追加
+app.post("/pipeline", async (req: Request, res: Response) => {
   try {
     // Bodyからのkey-value値の配列を取得
     const body = req.body;
-    // key-valueの一括追加
+    // Pipelineによるkey-valueの一括追加
     const pipeline = redisClient.pipeline();
     body.forEach((param: any) => {
       pipeline.set(param.key, param.value);
     });
     await pipeline.exec();
+    // レスポンス
+    return res.status(200).json("OK");
+  } catch (err) {
+    // レスポンス
+    return res.status(500).json(err);
+  }
+});
+
+// Transactionによるkey-valueの一括追加
+app.post("/transaction", async (req: Request, res: Response) => {
+  try {
+    // Bodyからのkey-value値の配列を取得
+    const body = req.body;
+    // Transactionによるkey-valueの一括追加(Transaction処理では途中で失敗した場合、元の状態に戻る)
+    const transaction = redisClient.multi();
+    body.forEach((param: any) => {
+      transaction.set(param.key, param.value);
+    });
+    await transaction.exec();
     // レスポンス
     return res.status(200).json("OK");
   } catch (err) {
