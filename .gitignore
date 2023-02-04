@@ -2,4 +2,6 @@ nodejs/api/express/node_modules
 nodejs/redis/data
 nodejs_ioredis/api/express/node_modules
 nodejs_ioredis/redis/data
+nodejs_ioredis/pubsub/node_modules
+nodejs_ioredis/pubsub/pubsub.js
 go/redis/data
