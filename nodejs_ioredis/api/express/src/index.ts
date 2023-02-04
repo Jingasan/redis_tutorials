@@ -94,6 +94,51 @@ app.get("/keys", async (_: Request, res: Response) => {
   }
 });
 
+// 全キーの削除
+app.delete("/keys", async (_: Request, res: Response) => {
+  try {
+    await redisClient.flushall();
+    // レスポンス
+    return res.status(200).json("OK");
+  } catch (err) {
+    // レスポンス
+    return res.status(500).json(err);
+  }
+});
+
+// List型の値の追加
+app.post("/list/:key", async (req: Request, res: Response) => {
+  try {
+    // URLパラメータとBodyからのkey-value値の取得
+    const key = req.params.key;
+    const body = req.body;
+    if (!("value" in body) || !Array.isArray(body.value)) {
+      return res.status(400).json("Bad Request");
+    }
+    // key-valueの追加
+    await redisClient.lpush(key, body.value);
+    // レスポンス
+    return res.status(200).json("OK");
+  } catch (err) {
+    // レスポンス
+    return res.status(500).json(err);
+  }
+});
+
+// List型の値の取得
+app.get("/list/:key", async (req: Request, res: Response) => {
+  try {
+    // List型の値の取得
+    const key = req.params.key;
+    const all = await redisClient.lrange(key, 0, -1);
+    // レスポンス
+    return res.status(200).json(all);
+  } catch (err) {
+    // レスポンス
+    return res.status(500).json(err);
+  }
+});
+
 // Redisとの接続処理
 if (dbHost === undefined || dbPort === undefined) {
   console.error("Host or port is none.");
