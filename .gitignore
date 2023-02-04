@@ -1,3 +1,5 @@
 nodejs/api/express/node_modules
 nodejs/redis/data
+nodejs_ioredis/api/express/node_modules
+nodejs_ioredis/redis/data
 go/redis/data
