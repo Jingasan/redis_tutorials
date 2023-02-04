@@ -51,7 +51,9 @@ app.post("/redis", async (req: Request, res: Response) => {
 app.get("/keys", async (req: Request, res: Response) => {
   // Redisクライアントの作成
   if (dbHost === undefined || dbPort === undefined) {
-    return null;
+    return res.status(500).send({
+      message: "Bad Request",
+    });
   }
   const url = "redis://" + dbHost + ":" + dbPort;
   console.log(url);
@@ -80,7 +82,9 @@ app.get("/keys", async (req: Request, res: Response) => {
 app.get("/redis/:key", async (req: Request, res: Response) => {
   // Redisクライアントの作成
   if (dbHost === undefined || dbPort === undefined) {
-    return null;
+    return res.status(500).send({
+      message: "Bad Request",
+    });
   }
   const url = "redis://" + dbHost + ":" + dbPort;
   console.log(url);
